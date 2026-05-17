@@ -1,0 +1,7 @@
+# 强制 Shell 脚本使用 LF 换行符（兼容 Linux 运行）
+*.sh text eol=lf
+
+# 二进制文件不做任何转换
+*.zip binary
+*.png binary
+*.jpg binary
