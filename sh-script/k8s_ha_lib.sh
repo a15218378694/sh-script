@@ -499,10 +499,18 @@ recover_statefulset() {
 
     if [ "$is_redis" -eq 1 ]; then
         log_warn "$ns/$sts: 检测到 Redis，执行缩容到0再扩容到$replicas"
-        kubectl scale statefulset "$sts" -n "$ns" --replicas=0 --request-timeout="${KUBECTL_TIMEOUT}s" >/dev/null 2>&1
-        sleep 3
-        kubectl scale statefulset "$sts" -n "$ns" --replicas="$replicas" --request-timeout="${KUBECTL_TIMEOUT}s" >/dev/null 2>&1
-        sleep 15
+        # 如果是unit-private命名空间
+        if [ "$ns" == "unit-private" ]; then
+            kubectl scale sts redis-redis -n  unit-private --replicas 0
+            kubectl delete pod -n  unit-private redis-init-cluster
+            kubectl apply -f init.yaml -n  unit-private 
+            kubectl scale sts redis-redis -n  unit-private --replicas 6
+        else
+            kubectl scale statefulset "$sts" -n "$ns" --replicas=0 --request-timeout="${KUBECTL_TIMEOUT}s" >/dev/null 2>&1
+            sleep 3
+            kubectl scale statefulset "$sts" -n "$ns" --replicas="$replicas" --request-timeout="${KUBECTL_TIMEOUT}s" >/dev/null 2>&1
+            sleep 15
+        fi
         check_item "$ns/$sts: Redis 已缩容到0再扩容到$replicas" "warn"
     else
         log_warn "$ns/$sts: 删除未就绪的 Pod 以触发重启"

@@ -1,0 +1,102 @@
+---
+# Source: redis/templates/init_cluster_redis.yaml
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-init-cluster
+data:
+  init_cluster.sh: |
+    #!/usr/bin/bash
+    set -ex
+    function set_redisHost_variable() {
+        while [ ! $host ]; do
+          sleep 1s
+          host=`timeout 1 dig +short redis-redis-$1.redis-headless.default.svc.cluster.local`
+          if [ ! $host ];then
+            echo "redis$1 has not be setup, PLEASE WAIT..."
+          else
+            jun=''
+            while [ ! $jun ]; do
+               jun=`redis-cli -a 2020@ngd -h $host cluster nodes 2>/dev/null |awk '{ print $2 }'|awk -F @ '{ print $1 }'`
+               echo "redis_jun:$jun"
+            done
+            eval redis$1=$jun
+            eval cluster_redis$1=$host
+            eval echo "redis$1 already setup \$redis$1"
+          fi
+        done
+        host=""
+    }
+
+    function wait_redis_up() {
+        response=$( timeout 1 redis-cli -a 2020@ngd -h $1 -p 6379 ping 2>/dev/null )
+        while [ "$response" != "PONG" ]; do
+            sleep 3s
+            response=$( timeout 1 redis-cli -a 2020@ngd -h $1 -p 6379 ping 2>/dev/null )
+        done
+        echo "$1 is running"
+    }
+
+    function set_redis_cluster() {
+        cat >/opt/RedisTribe.sh<<EOF
+          spawn redis-cli -a 2020@ngd --cluster create --cluster-replicas 1 \
+          $redis0 \
+          $redis1 \
+          $redis2 \
+          $redis3 \
+          $redis4 \
+          $redis5
+          expect  "to accept): "
+          send "yes\n"
+          expect eof
+    EOF
+        expect /opt/RedisTribe.sh && rm -f /opt/RedisTribe.sh
+    }
+
+    #sleep 120s
+
+    #设置host地址变量
+    for i in $(seq 0 5)
+    do
+      set_redisHost_variable $i
+    done
+
+    #确认pod全部创建完毕
+    for i in $(seq 0 5)
+    do
+        eval wait_redis_up \$cluster_redis$i
+    done
+
+    #创建redis集群
+    set_redis_cluster
+    if [ $? -eq 0 ]; then
+        echo "finish to setup redis-cluster relationship!"
+        echo "server is running..."
+    else
+        echo "can not setup redis-cluster  relationship, please setup manually!"
+        exit 1
+    fi
+
+---
+# Source: redis/templates/init_cluster_redis.yaml
+apiVersion: v1
+kind: Pod
+metadata:
+  name: redis-init-cluster
+spec:
+  containers:
+  - name: redis-init-cluster
+    #image: "iregistry.baidu-int.com/acg-bob/redis-init:v2"
+    image: "iregistry.baidu-int.com/acg-ngd/middleware/redis-init:v2-fix-20231228160313"
+    imagePullPolicy: "IfNotPresent"
+    #command: ["/usr/bin/sleep", "24h"]
+    command: ["/usr/bin/bash", "/opt/init_cluster.sh"]
+    volumeMounts:
+    - name: script
+      mountPath: /opt/init_cluster.sh
+      subPath: init_cluster.sh
+  volumes:
+  - name: script
+    configMap:
+      name: redis-init-cluster
+  restartPolicy: OnFailure

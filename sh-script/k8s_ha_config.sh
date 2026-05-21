@@ -12,8 +12,8 @@
 # 演练/恢复不依赖此列表，依赖动态发现所有命名空间下的全量deploy
 # 多行变量，sh兼容遍历
 HA_SCALE_DEPLOYS="default/unit-adaptor-service
-kube-system/coredns
 tianniu/docker-distribution
+redis/redis-803-cluster-amd64
 unit-private/aicp-nlu
 unit-private/backend
 unit-private/core
@@ -45,7 +45,6 @@ digital-human/digital-human-console
 digital-human/digital-human-llm-dm
 digital-human/digital-human-plat
 digital-human/digital-human-resource-pool
-digital-human/janus-nginx
 digital-human/leaflet-web
 digital-human/render-proxy-a2a-real-time
 digital-human/render-proxy-ue5-huishang
