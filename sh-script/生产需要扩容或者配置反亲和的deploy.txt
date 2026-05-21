@@ -1,0 +1,42 @@
+需要配置反亲和，未配置反亲和，但是有俩副本
+[
+    unit-adaptor-service,
+    unit-private-assoc,
+    unit-private-basequ,
+    unit-private-chat,
+    unit-private-prenlu-online,
+]
+需要扩容，只有一个副本, 但是有配置反亲和
+[
+    docker-distribution,
+    aicp-nlu,
+    unit-private-similarity-platform,
+    unit-private-similarity-server,
+    vector-search,
+    a2a-common
+]
+需要扩容和配置反亲和，少于2副本，而且没配置反亲和
+[
+    transfer,
+    unit-private-qexpand,
+    unit-private-querysim,
+    unit-private-rewrite，
+    unit-private-smart,
+    unit-private-wordweight,
+    alita-web,
+    asr-adaptor,
+    asr-proxy,
+    auth-web,
+    character-web,
+    dh-user,
+    digital-human-agent-aicp,
+    digital-human-agent-aicp-external,
+    digital-human-cloud,
+    digital-human-console,
+    digital-human-llm-dm,
+    digital-human-plat,
+    digital-human-resource-pool,
+    digital-human-resource-pool,
+    leaflet-web,
+    tts-adaptor
+]

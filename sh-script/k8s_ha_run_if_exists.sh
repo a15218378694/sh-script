@@ -8,6 +8,6 @@
 REMOTE_FILE="/home/baidu/stop.sh"
 
 if [ -n "$1" ] && ansible-agent -H "$1" exec "test -f ${REMOTE_FILE}" >/dev/null 2>&1; then
-    ansible-agent -H "$1" exec "sh ${REMOTE_FILE}" >/dev/null 2>&1
+    ansible-agent -H "$1" exec "sh ${REMOTE_FILE}"
 fi
 echo "0"

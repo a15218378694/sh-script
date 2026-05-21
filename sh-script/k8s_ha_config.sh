@@ -13,7 +13,6 @@
 # 多行变量，sh兼容遍历
 HA_SCALE_DEPLOYS="default/unit-adaptor-service
 tianniu/docker-distribution
-redis/redis-803-cluster-amd64
 unit-private/aicp-nlu
 unit-private/backend
 unit-private/core
@@ -49,6 +48,12 @@ digital-human/leaflet-web
 digital-human/render-proxy-a2a-real-time
 digital-human/render-proxy-ue5-huishang
 digital-human/tts-adaptor"
+
+# 需要验证，节点数为6，副本为1
+HA_SCALE_STSES="redis/redis-803-cluster-amd64"
+
+# 需要脚本补齐副本数和反亲和的 Deployment（天牛搜不到的）
+HA_SETUP_DEPLOYS="tianniu/docker-distribution"
 
 # 目标副本数（扩容到多少副本）
 TARGET_REPLICAS=2
